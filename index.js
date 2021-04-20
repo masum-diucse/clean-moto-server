@@ -105,6 +105,17 @@ client.connect(err => {
             })
     })
 
+    //--delete single service
+    app.delete('/deleteService/:id', (req, res) => {
+        const id = req.params.id;
+        console.log(id);
+        packageCollection.deleteOne({
+            _id: ObjectId(id)
+        }).then(result => {
+            res.send(result.deletedCount > 0);
+        })
+    })
+
     console.log("DB Connected");
 
 });
