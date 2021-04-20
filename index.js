@@ -6,6 +6,7 @@ const cors = require('cors');
 require('dotenv').config()
 app.use(cors());
 app.use(bodyParser.json());
+const ObjectId = require('mongodb').ObjectId;
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kdxcg.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -67,13 +68,21 @@ client.connect(err => {
             })
     })
 
-    //--get booking list by date
-    app.post('/getBookingList', (req, res) => {
-        const data=req.body
+    //--get booking list by email
+    app.post('/getBookingListByEmail', (req, res) => {
+        const data = req.body
         bookingCollection.find(data)
-        .toArray((err,bookings)=>{
-            res.send(bookings);
-        })
+            .toArray((err, bookings) => {
+                res.send(bookings);
+            })
+    })
+
+    //--get all booking list 
+    app.get('/getAllBookingList', (req, res) => {
+        bookingCollection.find({})
+            .toArray((err, bookings) => {
+                res.send(bookings);
+            })
     })
 
     //--check admin
@@ -84,12 +93,24 @@ client.connect(err => {
                 res.send(email.length > 0);
             })
     })
+
+    //--single booking update status 
+    app.patch('/updateBookingStatus/:id', (req, res) => {
+        bookingCollection.updateOne({ _id: ObjectId(req.params.id) },
+            {
+                $set: { taskStatus: req.body.taskStatus }
+            })
+            .then(result => {
+                res.send(result.modifiedCount > 0)
+            })
+    })
+
     console.log("DB Connected");
 
 });
 
 app.get('/', (req, res) => {
-    res.send("Hello from clean-moto-server;!!");
+    res.send("Hello from clean-moto-server!!");
 })
 
 app.listen(process.env.PORT || 5000);
