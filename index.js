@@ -14,6 +14,7 @@ client.connect(err => {
     const adminCollection = client.db(`${process.env.DB_NAME}`).collection(`${process.env.DB_COLLECTION}`);
     const packageCollection = client.db(`${process.env.DB_NAME}`).collection(`${process.env.DB_COLLECTION_2}`);
     const reviewCollection = client.db(`${process.env.DB_NAME}`).collection(`${process.env.DB_COLLECTION_3}`);
+    const bookingCollection = client.db(`${process.env.DB_NAME}`).collection(`${process.env.DB_COLLECTION_4}`);
 
     //--add admin email
     app.post('/addAdminEmail', (req, res) => {
@@ -32,10 +33,19 @@ client.connect(err => {
             })
     })
 
-      //-add review
-      app.post('/addReview', (req, res) => {
+    //--add review
+    app.post('/addReview', (req, res) => {
         const review = req.body;
         reviewCollection.insertOne(review)
+            .then(result => {
+                res.send(result.insertedCount > 0)
+            })
+    })
+
+    //--add booking
+    app.post('/addBooking', (req, res) => {
+        const booking = req.body;
+        bookingCollection.insertOne(booking)
             .then(result => {
                 res.send(result.insertedCount > 0)
             })
@@ -49,21 +59,31 @@ client.connect(err => {
             })
     })
 
-      //--get all testimonial
-      app.get('/getAllReviews', (req, res) => {
+    //--get all testimonial
+    app.get('/getAllReviews', (req, res) => {
         reviewCollection.find({})
             .toArray((err, reviews) => {
                 res.send(reviews);
             })
     })
+
+    //--get booking list by date
+    app.post('/getBookingList', (req, res) => {
+        const data=req.body
+        bookingCollection.find(data)
+        .toArray((err,bookings)=>{
+            res.send(bookings);
+        })
+    })
+
     //--check admin
     app.post('/checkAdmin', (req, res) => {
         const data = req.body;
         adminCollection.find(data)
-          .toArray((err, email) => {
-            res.send(email.length>0);
-          })
-      })
+            .toArray((err, email) => {
+                res.send(email.length > 0);
+            })
+    })
     console.log("DB Connected");
 
 });
